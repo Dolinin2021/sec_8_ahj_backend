@@ -1,7 +1,11 @@
-const http = require('http');
-const Koa = require('koa');
-const koaBody = require('koa-body');
+import { randomUUID } from 'crypto';
+import { createServer } from 'http';
+import Koa from 'koa';
+import koaBody from 'koa-body';
+
 const app = new Koa();
+const server = createServer(app.callback());
+const port = process.env.PORT || 7070;
 
 // => CORS
 app.use(async (ctx, next) => {
@@ -46,45 +50,88 @@ app.use(koaBody({
 
 let tickets = [
   {
-    id: Math.random(),
+    id: randomUUID(),
     name: "Поменять краску в принтере, ком. 404",
     description: "Принтер HP LJ-1210, картриджи на складе",
     status: false,
-    created: Date.now(),
+    created: new Date().toLocaleDateString(),
   },
   {
-    id: Math.random(),
+    id: randomUUID(),
     name: "Переустановить Windows, PC-Hall24",
     description: "",
     status: false,
-    created: Date.now(),
+    created: new Date().toLocaleDateString(),
   },
   {
-    id: Math.random(),
+    id: randomUUID(),
     name: "Установить обновление KB-31642dv3875",
     description: "Вышло критическое обновление для Windows",
     status: false,
-    created: Date.now(),
+    created: new Date().toLocaleDateString(),
   },
 ];
 
 app.use(async ctx => {
-  const { method } = ctx.request.querystring;
+  let params = new URL('http://localhost:'+ port + ctx.url).searchParams;
+  let method = params.get("method");
 
   switch (method) {
     case 'allTickets':
-      ctx.response.body = tickets;
+      let arr = [];
+      tickets.forEach(element => {
+        arr.push({
+          'id': element.id, 
+          'name': element.name, 
+          'status': element.status, 
+          'created': element.created
+        });
+      });
+      ctx.response.body = arr;
       return;
-    // TODO: обработка остальных методов
+
+    case "ticketById": {
+      let id = params.get("id");
+      const ticket = tickets.find(item => item.id == id);
+      if (!ticket) {
+        ctx.response.status = 404;
+        ctx.response.body = "Ticket not found";
+        return;
+      }
+      ctx.response.body = ticket;
+      return;
+    }
+
+    case "createTicket": {
+      try {
+        let params = new URL('http://localhost:'+ port + ctx.request.url).searchParams;
+        let name = params.get("name");
+        let description = params.get("description");
+        let status = params.get("status");
+
+        const newTicket = {
+          id: randomUUID(),
+          name: name,
+          status: status,
+          description: description || "",
+          created: new Date().toLocaleDateString(),
+        };
+
+        tickets.push(newTicket);
+        ctx.response.body = newTicket;
+        
+      } catch (error) {
+        ctx.response.status = 500;
+        ctx.response.body = JSON.stringify({ error: error.message });
+      }
+      return;
+    }
+
     default:
       ctx.response.status = 404;
       return;
   }
 });
-
-const server = http.createServer(app.callback());
-
-const port = process.env.PORT || 7070;
 
 server.listen(port, (err) => {
   if (err) {
