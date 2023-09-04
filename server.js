@@ -54,21 +54,21 @@ let tickets = [
     name: "Поменять краску в принтере, ком. 404",
     description: "Принтер HP LJ-1210, картриджи на складе",
     status: false,
-    created: new Date().toLocaleDateString(),
+    created: new Date(),
   },
   {
     id: randomUUID(),
     name: "Переустановить Windows, PC-Hall24",
     description: "",
     status: false,
-    created: new Date().toLocaleDateString(),
+    created: new Date(),
   },
   {
     id: randomUUID(),
     name: "Установить обновление KB-31642dv3875",
     description: "Вышло критическое обновление для Windows",
     status: false,
-    created: new Date().toLocaleDateString(),
+    created: new Date(),
   },
 ];
 
@@ -123,6 +123,36 @@ app.use(async ctx => {
       } catch (error) {
         ctx.response.status = 500;
         ctx.response.body = JSON.stringify({ error: error.message });
+      }
+      return;
+    }
+
+    case "deleteById": {
+      let id = params.get("id");
+      const ticket = tickets.find(item => item.id == id);
+      if (ticket) {
+        tickets = tickets.filter((ticket) => ticket.id !== id);
+        ctx.response.status = 204;
+      } else {
+        ctx.response.status = 404;
+        ctx.response.body = "Ticket not found";
+        return;
+      }
+      return;
+    }
+
+    case "updateById": {
+      let id = params.get("id");
+      const ticket = tickets.find(item => item.id == id);
+      const updateData = ctx.request.query;
+      delete updateData.method;
+      if (ticket) {
+        Object.assign(ticket, updateData);
+        ctx.response.body = tickets;
+      } else {
+        ctx.response.status = 404;
+        ctx.response.body = "Ticket not found";
+        return;
       }
       return;
     }
