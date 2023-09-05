@@ -1,44 +1,14 @@
 import { randomUUID } from 'crypto';
 import { createServer } from 'http';
 import Koa from 'koa';
+import cors from '@koa/cors';
 import koaBody from 'koa-body';
 
 const app = new Koa();
 const server = createServer(app.callback());
 const port = process.env.PORT || 7070;
 
-// => CORS
-app.use(async (ctx, next) => {
-  const origin = ctx.request.get('Origin');
-  if (!origin) {
-    return await next();
-  }
-
-  const headers = { 'Access-Control-Allow-Origin': '*', };
-
-  if (ctx.request.method !== 'OPTIONS') {
-    ctx.response.set({...headers});
-    try {
-      return await next();
-    } catch (e) {
-      e.headers = {...e.headers, ...headers};
-      throw e;
-    }
-  }
-
-  if (ctx.request.get('Access-Control-Request-Method')) {
-    ctx.response.set({
-      ...headers,
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH',
-    });
-
-    if (ctx.request.get('Access-Control-Request-Headers')) {
-      ctx.response.set('Access-Control-Allow-Headers', ctx.request.get('Access-Control-Request-Headers'));
-    }
-
-    ctx.response.status = 204;
-  }
-});
+app.use(cors());
 
 // => Body Parsers
 app.use(koaBody({
@@ -84,7 +54,7 @@ app.use(async ctx => {
           'id': element.id, 
           'name': element.name, 
           'status': element.status, 
-          'created': element.created
+          'created': Date.parse(element.created)
         });
       });
       ctx.response.body = arr;
@@ -114,7 +84,7 @@ app.use(async ctx => {
           name: name,
           status: status,
           description: description || "",
-          created: new Date().toLocaleDateString(),
+          created: new Date(),
         };
 
         tickets.push(newTicket);
