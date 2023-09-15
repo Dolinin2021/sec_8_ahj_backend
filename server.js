@@ -23,7 +23,7 @@ let tickets = [
     id: randomUUID(),
     name: "Поменять краску в принтере, ком. 404",
     description: "Принтер HP LJ-1210, картриджи на складе",
-    status: false,
+    status: true,
     created: new Date(),
   },
   {
@@ -37,7 +37,7 @@ let tickets = [
     id: randomUUID(),
     name: "Установить обновление KB-31642dv3875",
     description: "Вышло критическое обновление для Windows",
-    status: false,
+    status: true,
     created: new Date(),
   },
 ];
@@ -54,7 +54,7 @@ app.use(async ctx => {
           'id': element.id, 
           'name': element.name, 
           'status': element.status, 
-          'created': Date.parse(element.created)
+          'created': element.created.toLocaleString(),
         });
       });
       ctx.response.body = arr;
