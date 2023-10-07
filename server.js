@@ -29,7 +29,7 @@ let tickets = [
   {
     id: randomUUID(),
     name: "Переустановить Windows, PC-Hall24",
-    description: "",
+    description: "Переустановить Windows с помощью BIOS",
     status: false,
     created: new Date(),
   },
