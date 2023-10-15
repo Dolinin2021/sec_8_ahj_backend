@@ -24,21 +24,21 @@ let tickets = [
     name: "Поменять краску в принтере, ком. 404",
     description: "Принтер HP LJ-1210, картриджи на складе",
     status: true,
-    created: new Date(),
+    created: new Date().toLocaleString(),
   },
   {
     id: randomUUID(),
     name: "Переустановить Windows, PC-Hall24",
     description: "Переустановить Windows с помощью BIOS",
     status: false,
-    created: new Date(),
+    created: new Date().toLocaleString(),
   },
   {
     id: randomUUID(),
     name: "Установить обновление KB-31642dv3875",
     description: "Вышло критическое обновление для Windows",
     status: true,
-    created: new Date(),
+    created: new Date().toLocaleString(),
   },
 ];
 
@@ -77,14 +77,13 @@ app.use(async ctx => {
         let params = new URL('http://localhost:'+ port + ctx.request.url).searchParams;
         let name = params.get("name");
         let description = params.get("description");
-        let status = params.get("status");
 
         const newTicket = {
           id: randomUUID(),
           name: name,
-          status: status,
+          status: false,
           description: description || "",
-          created: new Date(),
+          created: new Date().toLocaleString(),
         };
 
         tickets.push(newTicket);
